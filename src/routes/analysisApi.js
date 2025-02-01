@@ -1,4 +1,3 @@
-//
 // src/routes/analysisApi.js
 import express from 'express';
 import { analyzeWatchData } from '../services/openaiService.js';
@@ -17,7 +16,7 @@ router.get('/watch-data', (req, res) => {
   }
 });
 
-// Analyze watch data
+// Analyze watch data and update environment settings
 router.post('/analyze', async (req, res) => {
   try {
     const { userInput } = req.body;
@@ -27,14 +26,24 @@ router.post('/analyze', async (req, res) => {
       return res.status(400).json({ error: 'No watch data available' });
     }
 
-    // Get analysis from OpenAI
+    // Get analysis from OpenAI using all metrics
     const analysis = await analyzeWatchData(currentData, userInput);
 
-    // Send analysis to environment service
+    // Compute a temperature value based on mental state if analysis doesn't include one.
+    const computedTemperature =
+      analysis.mentalState === 'stressed'
+        ? 72
+        : analysis.mentalState === 'relaxed'
+        ? 74
+        : 73;
+
+    // Attempt to send analysis results to the environment service.
     try {
-      const envResponse = await axios.post('http://localhost:3005/api/environment', {
+      const envResponse = await axios.post('http://localhost:3004/api/environment', {
         mentalState: analysis.mentalState,
         confidence: analysis.confidence,
+        temperature: analysis.temperature || computedTemperature,
+        // You can pass along other fields if needed (e.g., lightLevel) or let the environment route compute defaults.
         analysis: analysis.analysis
       });
 

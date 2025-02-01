@@ -16,15 +16,15 @@ export async function analyzeWatchData(watchData, userInput = '') {
       Current Health Data:
       - Heart Rate: ${watchData.heartRate} bpm
       - Blood Oxygen: ${watchData.bloodOxygen}%
-      - Stress Level: ${watchData.stressLevel}/100
+      - Stress Level: ${watchData.stressLevel || 'N/A'}/100
       - Steps: ${watchData.steps}
-      - Calories Burned: ${watchData.caloriesBurned}
+      - Calories Burned: ${watchData.calories}  // using 'calories' as in your watchData
       
       User Input: "${userInput}"
 
       Based on this data, please:
       1. Determine if the user is "stressed", "relaxed", or "neutral"
-      2. Provide brief reasoning for this assessment
+      2. Provide a brief reasoning for this assessment
       3. Suggest 2-3 actions to improve their state if needed
 
       Format the response as JSON:
@@ -39,7 +39,7 @@ export async function analyzeWatchData(watchData, userInput = '') {
     `;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o", // Updated to latest model
+      model: "gpt-4", // Update to the correct model identifier if necessary
       messages: [
         {
           role: "system",
@@ -51,11 +51,11 @@ export async function analyzeWatchData(watchData, userInput = '') {
         }
       ],
       temperature: 0.7,
-      max_tokens: 500,
-      response_format: { type: "json_object" } // Enforce JSON output
+      max_tokens: 500
+      // Remove response_format if not needed or adjust according to your library version
     });
 
-    // Parse the response with proper error handling
+    // Extract and parse the response content
     const responseContent = completion.choices[0]?.message?.content;
     if (!responseContent) {
       throw new Error('No content in OpenAI response');

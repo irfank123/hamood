@@ -68,7 +68,7 @@ wss.on('connection', (ws, req) => {
 
   if (pathname === '/watch') {
     clients.watch.add(ws);
-    // Send initial watch data
+    // Send enriched initial watch data
     const currentData = simulator.getCurrentData();
     ws.send(
       JSON.stringify({
@@ -86,7 +86,8 @@ wss.on('connection', (ws, req) => {
         humidity: 45,
         lightLevel: 50,
         musicPlaying: false,
-        mentalState: 'neutral'
+        mentalState: 'neutral',
+        confidence: 0.8
       }
     };
     ws.send(JSON.stringify(initialState));
@@ -111,16 +112,17 @@ wss.on('connection', (ws, req) => {
   });
 });
 
-// Update environment route using the new broadcasting function
+// Updated Environment API route to include confidence and temperature updates
 app.post('/api/environment', async (req, res) => {
   try {
-    const { mentalState, lightLevel, temperature } = req.body;
+    const { mentalState, lightLevel, temperature, confidence } = req.body;
 
-    // Process the environment update
+    // Process the environment update with all provided metrics
     const settings = {
       mentalState: mentalState || 'neutral',
       lightLevel: lightLevel || 50,
       temperature: temperature || 22,
+      confidence: confidence || 0.8,
       timestamp: Date.now()
     };
 
@@ -134,7 +136,7 @@ app.post('/api/environment', async (req, res) => {
   }
 });
 
-// Routes
+// Use additional routes (analysis and environment-specific routes)
 app.use('/api', analysisRoutes);
 app.use('/api', environmentRoutes);
 
