@@ -6,13 +6,16 @@ import cors from 'cors';
 import { watchSimulator } from './services/watchSimulator.js';
 import environmentRoutes from './routes/environmentApi.js';
 import analysisRoutes from './routes/analysisApi.js';
+import { initWebSocketServer } from './environmentBroadcaster.js';
 
 dotenv.config();
 
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173'
+}));
 app.use(express.json());
 
 // Watch Analysis Service
@@ -25,7 +28,7 @@ const envWsPort = process.env.ENV_WS_PORT || 8085;
 
 // Start WebSocket servers
 const watchWss = new WebSocketServer({ port: watchWsPort });
-const envWss = new WebSocketServer({ port: envWsPort });
+initWebSocketServer(envWsPort); // Initialize environment WS server on required port
 
 // Initialize watch simulator and make it available to routes
 const simulator = watchSimulator(watchWss);
@@ -49,7 +52,7 @@ app.get('/health/environment', (req, res) => {
   res.json({ service: 'environment', status: 'healthy' });
 });
 
-// WebSocket connection handling
+// WebSocket connection handling for watch
 watchWss.on('connection', (ws) => {
   console.log('Watch WebSocket client connected');
   
@@ -58,11 +61,6 @@ watchWss.on('connection', (ws) => {
   ws.send(JSON.stringify(currentData));
   
   ws.on('close', () => console.log('Watch client disconnected'));
-});
-
-envWss.on('connection', (ws) => {
-  console.log('Environment WebSocket client connected');
-  ws.on('close', () => console.log('Environment client disconnected'));
 });
 
 // Start HTTP servers
@@ -80,11 +78,10 @@ app.listen(envPort, () => {
 process.on('SIGTERM', () => {
   simulator.stopSimulator();
   watchWss.close();
-  envWss.close();
+  // Optionally add cleanup for environment WebSocket server if exposed by the broadcaster module.
 });
 
 process.on('SIGINT', () => {
   simulator.stopSimulator();
   watchWss.close();
-  envWss.close();
 });

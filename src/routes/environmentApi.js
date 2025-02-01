@@ -1,7 +1,8 @@
+// src/routes/environmentApi.js
 import express from 'express';
 import { hueService } from '../services/hueService.js';
 import { musicService } from '../services/musicService.js';
-
+import { broadcastEnvironmentSettings } from '../environmentBroadcaster.js';
 
 const router = express.Router();
 
@@ -35,6 +36,9 @@ router.post('/environment', async (req, res) => {
         };
 
         console.log("✅ Final environment settings:", JSON.stringify(settings, null, 2));
+
+        // Broadcast environment settings to connected WebSocket clients
+        broadcastEnvironmentSettings({ status: 'success', settings });
 
         res.json({
             status: 'success',
@@ -90,6 +94,5 @@ router.post('/music/recommendations', async (req, res) => {
       res.status(500).json({ error: error.message });
   }
 });
-
 
 export default router;
