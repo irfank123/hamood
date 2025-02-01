@@ -1,0 +1,22 @@
+{
+  "name": "smart_home_mh",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.16.0",
+    "openai": "^4.28.0",
+    "dotenv": "^16.4.1",
+    "cors": "^2.8.5",
+    "axios": "^1.6.7",
+    "node-hue-api": "^5.0.0-beta.16"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}
