@@ -104,10 +104,7 @@ class MusicService {
             }));
 
             console.log("✅ Suggested Tracks:", JSON.stringify(tracks, null, 2));
-            if (tracks.length > 0) {
-              console.log(`🌐 Opening URL for first recommended track: ${tracks[0].url}`);
-              await open(tracks[0].url);
-            }
+            
             return { type: mentalState, suggestedTracks: tracks };
 
         } catch (error) {
