@@ -1,56 +1,64 @@
-// src/services/hueService.js
 class HueService {
-    constructor() {
+  constructor() {
       this.isConnected = false;
-    }
-  
-    async connect() {
-      // Simulate connection
-      this.isConnected = true;
-      console.log('Connected to Hue Bridge (simulated)');
-      return true;
-    }
-  
-    getPresetByMentalState(mentalState) {
-      const presets = {
-        stressed: {
-          bri: 127,    // 50% brightness
-          hue: 46920,  // Blue
-          sat: 254     // Full saturation
-        },
-        neutral: {
-          bri: 178,    // 70% brightness
-          hue: 8418,   // Warm white
-          sat: 140     // Medium saturation
-        },
-        relaxed: {
-          bri: 178,    // 70% brightness
-          hue: 8418,   // Warm white
-          sat: 140     // Low saturation
-        }
-      };
-  
-      return presets[mentalState] || presets.neutral;
-    }
-  
-    async updateLights(mentalState) {
-      if (!this.isConnected) {
-        await this.connect();
-      }
-  
-      const preset = this.getPresetByMentalState(mentalState);
-      console.log('Updating lights with preset:', preset);
-      return preset;
-    }
-  
-    async getStatus() {
-      return {
-        connected: this.isConnected,
-        lights: 3,  // Simulated number of lights
-        status: 'ready'
-      };
-    }
+      console.log("🔌 HueService Initialized. Connection Status:", this.isConnected);
   }
-  
-  const hueService = new HueService();
-  export { hueService };
+
+  async connect() {
+      try {
+          console.log("🔌 Attempting to connect to Hue Bridge...");
+          this.isConnected = true;
+          console.log("✅ Connected to Hue Bridge!");
+          return true;
+      } catch (error) {
+          console.error("❌ HueService connection failed:", error);
+          return false;
+      }
+  }
+
+  getPresetByMentalState(mentalState) {
+      const presets = {
+          stressed: { bri: 127, hue: 46920, sat: 254 },
+          neutral: { bri: 178, hue: 8418, sat: 140 },
+          relaxed: { bri: 178, hue: 8418, sat: 100 }
+      };
+
+      return presets[mentalState] || presets.neutral;
+  }
+
+  async updateLights(mentalState) {
+      if (!this.isConnected) {
+          console.log("🚨 HueService is NOT connected. Attempting to connect...");
+          await this.connect();
+      }
+
+      if (!this.isConnected) {
+          console.log("❌ HueService failed to connect. Returning empty lights.");
+          return {};
+      }
+
+      const preset = this.getPresetByMentalState(mentalState);
+      console.log(`🎨 Applying preset for '${mentalState}':`, JSON.stringify(preset, null, 2));
+
+      const updatedLights = {
+          "1": { id: "1", name: "Living Room", ...preset, lastUpdated: new Date().toISOString() },
+          "2": { id: "2", name: "Bedroom", ...preset, lastUpdated: new Date().toISOString() },
+          "3": { id: "3", name: "Study", ...preset, lastUpdated: new Date().toISOString() }
+      };
+
+      console.log("💡 Updated Lights:", JSON.stringify(updatedLights, null, 2));
+      return updatedLights;
+  }
+
+  async getStatus() {
+      console.log("📡 Checking HueService status. Connected:", this.isConnected);
+      return {
+          connected: this.isConnected,
+          lights: 3,
+          status: this.isConnected ? 'ready' : 'disconnected'
+      };
+  }
+}
+
+const hueService = new HueService();
+export { hueService };
