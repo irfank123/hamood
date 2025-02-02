@@ -172,9 +172,9 @@ const LivingRoomSimulator = () => {
   // Convert mental state into a light color
   const getColorForMentalState = (state) => {
     const colors = {
-      stressed: '#E6B0AA',
-      neutral: '#FFE5B4',
-      relaxed: '#A2D9CE'
+      stressed: '#ADD8E6',
+      neutral: '#90EE90',
+      relaxed: '#D8BFD8'
     };
     return colors[state] || colors.neutral;
   };
