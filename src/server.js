@@ -82,7 +82,7 @@ wss.on('connection', (ws, req) => {
     const initialState = {
       type: 'environmentUpdate',
       data: {
-        temperature: 22,
+        temperature: 72,
         humidity: 45,
         lightLevel: 50,
         musicPlaying: false,

@@ -13,12 +13,14 @@ import {
   Cloud, 
   BarChart2, 
   Settings,
-  ChevronDown
+  ChevronDown,
+  VolumeX
 } from 'lucide-react';
 import { Alert, AlertDescription } from "../ui/alert";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import MentalStateAnalyzer from '../MentalStateAnalyzer';
+import YouTubePlayer from '../YoutubePlayer';
 
 const LivingRoomSimulator = () => {
   // State management
@@ -33,7 +35,7 @@ const LivingRoomSimulator = () => {
   });
 
   const [environment, setEnvironment] = useState({
-    lightColor: '#FFE5B4',
+    lightColor: '#90EE90',
     lightBrightness: 100,
     music: { type: 'None', suggestedTracks: [] },
     musicVolume: 50,
@@ -57,7 +59,7 @@ const LivingRoomSimulator = () => {
   const watchWsRef = useRef(null);
   const envWsRef = useRef(null);
 
-  // Analysis polling: (optional) poll every 30 seconds if desired
+  // Analysis polling
   useEffect(() => {
     const analyzeWatchData = async () => {
       try {
@@ -68,7 +70,7 @@ const LivingRoomSimulator = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            userInput: '', // Extend with user input if needed
+            userInput: '',
             watchData
           }),
         });
@@ -101,7 +103,7 @@ const LivingRoomSimulator = () => {
     return () => clearInterval(intervalId);
   }, [watchData, environment.connected]);
 
-  // Manual analysis trigger from the frontend
+  // Manual analysis trigger
   const analyzeNow = async () => {
     try {
       console.log('Manually triggering analysis with watchData:', watchData);
@@ -128,7 +130,7 @@ const LivingRoomSimulator = () => {
     }
   };
 
-  // Update watch data when a new message is received
+  // Update watch data
   const updateWatchData = (data) => {
     const computedStressLevel = calculateStressLevel(data.heartRate, data.activity);
     console.log('Updating watch data with:', data, 'Computed stress level:', computedStressLevel);
@@ -152,14 +154,14 @@ const LivingRoomSimulator = () => {
     });
   };
 
-  // Simple stress calculation based on heart rate and activity
+  // Calculate stress level
   const calculateStressLevel = (heartRate, activity) => {
     const baseStress = (heartRate - 60) / 40;
     const activityFactor = activity / 100;
     return Math.min(10, Math.max(1, Math.floor((baseStress - activityFactor * 0.5) * 10)));
   };
 
-  // Update environment state based on new data received
+  // Update environment data
   const updateEnvironmentData = (data) => {
     console.log('Updating environment with:', data);
     setEnvironment(prev => ({
@@ -169,31 +171,30 @@ const LivingRoomSimulator = () => {
     }));
   };
 
-  // Convert mental state into a light color
+  // Get color for mental state
   const getColorForMentalState = (state) => {
     const colors = {
-      stressed: '#E6B0AA',
-      neutral: '#FFE5B4',
-      relaxed: '#A2D9CE'
+      stressed: '#ADD8E6',
+      neutral: '#90EE90',
+      relaxed: '#D8BFD8'
     };
     return colors[state] || colors.neutral;
   };
+
+  // Get darker color for light
   const getDarkerColor = (color) => {
-    // Remove the # and convert to RGB
     const r = parseInt(color.slice(1, 3), 16);
     const g = parseInt(color.slice(3, 5), 16);
     const b = parseInt(color.slice(5, 7), 16);
     
-    // Make each component 20% darker
     const darkerR = Math.floor(r * 0.8);
     const darkerG = Math.floor(g * 0.8);
     const darkerB = Math.floor(b * 0.8);
     
-    // Convert back to hex
     return `#${darkerR.toString(16).padStart(2, '0')}${darkerG.toString(16).padStart(2, '0')}${darkerB.toString(16).padStart(2, '0')}`;
   };
 
-  // Handle environment updates by sending a POST request
+  // Handle environment updates
   const handleEnvironmentUpdate = async (updates) => {
     try {
       const response = await fetch('http://localhost:3004/api/environment', {
@@ -214,7 +215,7 @@ const LivingRoomSimulator = () => {
     }
   };
 
-  // New effect: Fetch music recommendations whenever mentalState changes
+  // Fetch music recommendations
   useEffect(() => {
     const fetchMusicRecommendations = async () => {
       try {
@@ -238,14 +239,14 @@ const LivingRoomSimulator = () => {
     }
   }, [environment.mentalState]);
 
-  // Display notifications
+  // Show notifications
   const showNotification = (message, type = 'info') => {
     setAlertMessage(message);
     setShowAlert(true);
     setTimeout(() => setShowAlert(false), 3000);
   };
 
-  // Calculate background style for the room
+  // Get room background
   const getRoomBackground = () => {
     const baseColor = timeOfDay === 'day' ? 'rgb(255, 255, 255)' : 'rgb(30, 30, 50)';
     const opacity = Math.floor((environment.lightBrightness / 100) * 255)
@@ -261,7 +262,7 @@ const LivingRoomSimulator = () => {
     };
   };
 
-  // WebSocket connection setup for watch and environment data
+  // WebSocket setup
   useEffect(() => {
     const connectWebSockets = () => {
       // Watch data connection
@@ -332,7 +333,7 @@ const LivingRoomSimulator = () => {
     };
   }, []);
 
-  // Render the main room view with watch data, environment controls, and mental state analysis
+  // Render room view
   const renderRoom = () => (
     <div className="space-y-6 w-full">
       <div className="relative w-full h-96 rounded-xl overflow-hidden text-black" style={getRoomBackground()}>
@@ -385,6 +386,14 @@ const LivingRoomSimulator = () => {
                   )}
                 </div>
               </div>
+              {environment.music?.suggestedTracks?.[0] && (
+                <div className="mt-2 w-full">
+                  <YouTubePlayer 
+                    track={environment.music.suggestedTracks[0]}
+                    volume={environment.musicVolume}
+                  />
+                </div>
+              )}
               <ChevronDown 
                 onClick={() => setShowAllTracks(prev => !prev)}
                 className={`mt-1 cursor-pointer transform transition-transform duration-200 ${showAllTracks ? 'rotate-180' : 'rotate-0'} text-blue-500`}
@@ -426,7 +435,7 @@ const LivingRoomSimulator = () => {
     </div>
   );
 
-  // Render analytics view using Recharts
+  // Render analytics view
   const renderAnalytics = () => (
     <div className="bg-white rounded-xl shadow-sm p-6 w-full">
       <h3 className="text-lg font-medium mb-4">Health Metrics Timeline</h3>
@@ -458,10 +467,11 @@ const LivingRoomSimulator = () => {
     </div>
   );
 
+  // Main component render
   return (
     <div className="flex flex-col w-screen min-h-screen bg-gray-100 overflow-x-hidden">
       <div className="flex flex-col flex-grow w-full px-6 py-6 mx-auto max-w-7xl">
-        {/* Navigation - Updated with full-width constraints */}
+        {/* Navigation */}
         <div className="mb-6 flex items-center justify-between w-full">
           <div className="flex space-x-4">
             <button
@@ -493,12 +503,12 @@ const LivingRoomSimulator = () => {
           </button>
         </div>
   
-        {/* Main Content Container - Fixed width handling */}
+        {/* Main Content */}
         <div className="flex-grow w-full max-w-full overflow-hidden">
           {selectedTab === 'room' ? renderRoom() : renderAnalytics()}
         </div>
   
-        {/* Control Panel - Responsive grid fix */}
+        {/* Control Panel */}
         <div className="w-full mt-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <button
@@ -527,7 +537,7 @@ const LivingRoomSimulator = () => {
             </button>
           </div>
   
-          {/* Connection Status - Full width badge */}
+          {/* Connection Status */}
           <div 
             className={`p-2 rounded-lg text-center text-sm w-full ${
               environment.connected 
@@ -542,7 +552,7 @@ const LivingRoomSimulator = () => {
         </div>
       </div>
   
-      {/* Alert Messages - Fixed positioning */}
+      {/* Alert Messages */}
       {showAlert && (
         <Alert className="fixed bottom-4 right-4 w-[calc(100%-2rem)] max-w-md">
           <AlertDescription>{alertMessage}</AlertDescription>
@@ -550,7 +560,6 @@ const LivingRoomSimulator = () => {
       )}
     </div>
   );
-  
 };
 
 export default LivingRoomSimulator;

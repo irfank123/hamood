@@ -16,7 +16,9 @@
     "node-hue-api": "^5.0.0-beta.16",
     "open": "^10.1.0",
     "openai": "^4.28.0",
-    "ws": "^8.16.0"
+    "react-youtube": "^10.1.0",
+    "ws": "^8.16.0",
+    "youtube-api-search": "^0.0.5"
   },
   "devDependencies": {
     "nodemon": "^3.0.3"
