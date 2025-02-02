@@ -33,7 +33,7 @@ A smart home system that uses real-time health data to analyze mental states and
 - **Frontend**: React, Tailwind CSS, shadcn/ui
 - **Backend**: Node.js, Express, WebSocket
 - **AI Integration**: OpenAI API
-- **External Services**: Last.fm API, Philips Hue API
+- **External Services**: Last.fm API, Youtube API
 
 ## Installation
 
